@@ -783,7 +783,8 @@ do
                         set_value = function(self, value)
                           self.window.flags[flag] = math.clamp(value, options.min, options.max)
                           self.entry.Text = tostring(self.window.flags[flag]) .. tostring(options.suffix or "")
-                          local distance = self.button.AbsoluteSize.X
+                          local s = self.window.scale and self.window.scale.Scale or 1
+                          local distance = self.button.AbsoluteSize.X / s
                           local origin = distance * (math.abs(options.min) / (options.max + math.abs(options.min)))
                           value = distance * (self.window.flags[flag] / (options.max + math.abs(options.min)))
                           self.slider_value.Size = UDim2.new(0, value, 1, 0)
@@ -891,7 +892,8 @@ do
                           local mouse_down
                           mouse_down = function(x)
                             is_mouse_down = true
-                            distance = self.button.AbsoluteSize.X
+                            local s = self.window.scale and self.window.scale.Scale or 1
+                            distance = self.button.AbsoluteSize.X / s
                             local mouse_distance = math.clamp((x - self.button.AbsolutePosition.X) / distance, 0, 1)
                             value = math.round(((options.max - options.min) * mouse_distance + options.min) * math.max((10 * (options.decimals or 1)), 1)) / math.max((10 * (options.decimals or 1)), 1)
                             local slider_origin = distance * (value / (options.max + math.abs(options.min)))
@@ -928,7 +930,8 @@ do
                               if value then
                                 self.window.flags[flag] = math.clamp(value, options.min, options.max)
                                 self.entry.Text = tostring(self.window.flags[flag]) .. tostring(options.suffix or "")
-                                distance = self.button.AbsoluteSize.X
+                                local s = self.window.scale and self.window.scale.Scale or 1
+                                distance = self.button.AbsoluteSize.X / s
                                 origin = distance * (math.abs(options.min) / (options.max + math.abs(options.min)))
                                 value = distance * (self.window.flags[flag] / (options.max + math.abs(options.min)))
                                 self.slider_value.Size = UDim2.new(0, value, 1, 0)
@@ -1412,9 +1415,13 @@ do
                               local s = self.window.scale and self.window.scale.Scale or 1
                               self.window.colorpicker_objects[1].Position = UDim2.new(0, (self.container.AbsolutePosition.X + self.container.AbsoluteSize.X + 15) / s, 0, self.container.AbsolutePosition.Y / s)
                               self.window.colorpicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
-                              self.window.location.Position = UDim2.new(0, math.clamp(saturation * self.window.colorpicker.AbsoluteSize.X, 0, 170), 0, math.clamp((-(value) + 1) * self.window.colorpicker.AbsoluteSize.Y, 0, 170))
-                              self.window.hue_slider_location.Position = UDim2.new(0, 0, 0, math.clamp(hue * self.window.hue_slider.AbsoluteSize.Y, 0, 175))
-                              self.window.opacity_slider_location.Position = UDim2.new(0, 0, 0, math.clamp(self.window.flags[flag].transparency * self.window.opacity_slider.AbsoluteSize.Y, 0, 175))
+                              local cp_x = self.window.colorpicker.AbsoluteSize.X / s
+                              local cp_y = self.window.colorpicker.AbsoluteSize.Y / s
+                              local h_y = self.window.hue_slider.AbsoluteSize.Y / s
+                              local o_y = self.window.opacity_slider.AbsoluteSize.Y / s
+                              self.window.location.Position = UDim2.new(0, math.clamp(saturation * cp_x, 0, cp_x - 10), 0, math.clamp((-(value) + 1) * cp_y, 0, cp_y - 10))
+                              self.window.hue_slider_location.Position = UDim2.new(0, 0, 0, math.clamp(hue * h_y, 0, h_y - 5))
+                              self.window.opacity_slider_location.Position = UDim2.new(0, 0, 0, math.clamp(self.window.flags[flag].transparency * o_y, 0, o_y - 5))
                               self.window.colorpicker_objects[1].Visible = true
                             end
                             local input_began
@@ -1916,7 +1923,10 @@ do
             local saturation = math.clamp((x - self.colorpicker.AbsolutePosition.X) / self.colorpicker.AbsoluteSize.X, 0, 1)
             local value = -(math.clamp((y - self.colorpicker.AbsolutePosition.Y) / self.colorpicker.AbsoluteSize.Y, 0, 1)) + 1
             local hue = self.current_colorpicker.color:ToHSV()
-            self.location.Position = UDim2.new(0, math.clamp(saturation * self.colorpicker.AbsoluteSize.X, 0, 170), 0, math.clamp((-(value) + 1) * self.colorpicker.AbsoluteSize.Y, 0, 170))
+            local s = self.scale and self.scale.Scale or 1
+            local cp_x = self.colorpicker.AbsoluteSize.X / s
+            local cp_y = self.colorpicker.AbsoluteSize.Y / s
+            self.location.Position = UDim2.new(0, math.clamp(saturation * cp_x, 0, cp_x - 10), 0, math.clamp((-(value) + 1) * cp_y, 0, cp_y - 10))
             self.opacity_slider.BackgroundColor3 = Color3.fromHSV(hue, saturation, value)
             self.current_colorpicker.color = Color3.fromHSV(hue, saturation, value)
             self.current_colorbox.BackgroundColor3 = self.current_colorpicker.color
@@ -1940,7 +1950,9 @@ do
           y = y - game:GetService("GuiService"):GetGuiInset().Y
           if self.colorpicker_hue_down then
             local hue = math.clamp((y - self.hue_slider.AbsolutePosition.Y) / self.hue_slider.AbsoluteSize.Y, 0, 1)
-            self.hue_slider_location.Position = UDim2.new(0, 0, 0, math.clamp(hue * self.hue_slider.AbsoluteSize.Y, 0, 175))
+            local s = self.scale and self.scale.Scale or 1
+            local h_y = self.hue_slider.AbsoluteSize.Y / s
+            self.hue_slider_location.Position = UDim2.new(0, 0, 0, math.clamp(hue * h_y, 0, h_y - 5))
             local _, saturation, value = self.current_colorpicker.color:ToHSV()
             self.opacity_slider.BackgroundColor3 = Color3.fromHSV(hue, saturation, value)
             self.colorpicker.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
@@ -1965,7 +1977,9 @@ do
           y = y - game:GetService("GuiService"):GetGuiInset().Y
           if self.colorpicker_opacity_down then
             local opacity = math.clamp((y - self.opacity_slider.AbsolutePosition.Y) / self.opacity_slider.AbsoluteSize.Y, 0, 1)
-            self.opacity_slider_location.Position = UDim2.new(0, 0, 0, math.clamp(opacity * self.opacity_slider.AbsoluteSize.Y, 0, 175))
+            local s = self.scale and self.scale.Scale or 1
+            local o_y = self.opacity_slider.AbsoluteSize.Y / s
+            self.opacity_slider_location.Position = UDim2.new(0, 0, 0, math.clamp(opacity * o_y, 0, o_y - 5))
             self.current_colorpicker.transparency = opacity
           end
         end
