@@ -1619,6 +1619,9 @@ do
         self.objects[#self.objects + 1] = buffer_instance
         return buffer_instance
       end,
+      set_scale = function(self, scale)
+        self.scale.Scale = scale
+      end,
       destroy = function(self)
         for _, object in next,self.objects do
           object:Destroy()
@@ -1655,6 +1658,11 @@ do
         elseif gethui then
           self.window.Parent = gethui()
         end
+        self.scale = self:add_object("UIScale", {
+          Name = generate_guid(),
+          Scale = 1,
+          Parent = self.window
+        })
         self.position = position
         self.size = size
         self.title = title
